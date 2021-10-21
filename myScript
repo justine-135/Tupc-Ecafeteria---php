@@ -1,0 +1,525 @@
+function indexFunc(){ //DOM for index.html
+  console.log("LOADED: index.html")
+  
+  let menuTitle = document.getElementById("menu-title");
+  let selectBtn = document.getElementsByClassName('btn-select');
+  const cover = document.getElementById('idCover');  
+    
+  function clickCategories(){// show items when clicked
+    for(let i = 0; i < selectBtn.length; i++){
+      selectBtn.item(i).onclick = function(){
+        cover.style.zIndex = "1";
+        if(this.id === "btn-breakfast"){
+          menuTitle.textContent = "Breakfast"
+        }
+        else if(this.id === "btn-lunchmeals"){
+          menuTitle.textContent = "Lunchmeals"
+        }
+        else if(this.id === "btn-beveragedrinks"){
+          menuTitle.textContent = "Beverage/Drinks"
+        }
+        else if(this.id === "btn-addons"){
+          menuTitle.textContent = "Add-ons"
+        }
+        function showBlur(){
+          if(selectBtn[i].getAttribute("aria-expanded") == "true"){
+            document.getElementById('select').innerHTML = `
+            <pre>
+   eat good 
+  feel good
+          </pre> 
+            `;
+            cover.style.zIndex ="6";
+            menuTitle.textContent = "Home"
+          }
+        }
+        document.getElementById('select').textContent = '';
+  
+        showBlur()
+      }
+    }
+  }
+  clickCategories();
+
+  let itemImage = document.getElementById('idMenu').getElementsByTagName('img');
+  let myPrice = document.getElementById('myPrice');
+  myPrice.style.fontWeight = "bolder";
+  
+  function clickImage(){// do something when item is clicked
+    
+    for(let i = 0; i < itemImage.length; i++){
+  
+      itemImage[i].onclick = function(){
+        let item = itemImage[i];
+        let getName = this.getAttribute("name");
+        let getPrice = this.getAttribute('value2');
+        let getQuantity = this.getAttribute('value');
+        addToCart(getName, getPrice, getQuantity, item);
+        console.log(getQuantity, getName, getPrice);
+
+        let quantityElement = document.getElementsByClassName('quantity-element');
+        for(let i = 0; i < quantityElement.length; i++){
+          let inputVal = quantityElement[i];
+          inputVal.addEventListener("change", function(event){
+            let input = event.target;
+            if (isNaN(parseInt(input.value)) || parseInt(input.value) <= 0){
+              input.value = 1;
+            }
+            else if(parseInt(input.value) > parseInt(inputVal.getAttribute("max"))){
+              input.value = inputVal.getAttribute("max");
+            }
+            let priceInput  = input.parentElement.childNodes[3];
+            priceInput.textContent = parseInt(getPrice) * input.value;
+            totalPrice();
+          });
+      }
+      getTotal();
+      totalPrice();
+      deleteRow();
+      };
+    };
+  };
+  clickImage();
+
+  function addToCart(itemName, itemPrice, itemQuantity){// add item to orders
+    let eachItemName = document.getElementsByClassName('name-par');
+    let createDiv = document.createElement('div');
+
+    for(let i = 0; i < eachItemName.length; i++){
+      if(eachItemName[i].innerHTML == itemName){
+        alert('Added already!')
+        return
+      }
+    }
+
+    let formContents = `
+    <div class="row content-inside" id="${itemName}">
+      <p class="name-par pl-1 col-4 col-xl-3">${itemName}</p>
+      <p class="pricing pl-4 col-3 col-xl-4" value="10">${itemPrice}</p>
+      <input class="quantity-element col-2 col-xl-3" type="number" min="1" max="${itemQuantity}" value="1" name="quantity">
+      <button class="del col-3 col-xl-2 material-icons" id="id-delete" type="button">clear</button>
+    </div>
+    `
+    createDiv.innerHTML = formContents;
+
+    let itemRow = document.getElementById('inside');
+    itemRow.appendChild(createDiv);      
+
+  };
+  
+  function deleteRow(){//delete individual orders
+    let del = document.getElementsByClassName('del');
+    for(let i = 0; i < del.length; i++){
+      del[i].addEventListener("click", function(event){
+        event.target.parentNode.remove();
+        totalPrice();
+        getTotal();
+      });
+    }
+  };
+
+  function writeCaption(){//write caption for each image
+    let caption = document.getElementsByClassName('caption');
+    for(let i = 0; i < caption.length; i++){
+      let getImg = caption.item(i).parentNode.firstElementChild;
+      let getImgQuantity = getImg.getAttribute("value");
+      let getImgName = getImg.getAttribute("name");
+      let getImgPrice = getImg.getAttribute("value2");
+  
+      caption.item(i).getElementsByTagName('h5')[0].textContent = getImgName;
+      caption.item(i).getElementsByTagName('h6')[0].textContent = "Quantity: " + getImgQuantity;
+      caption.item(i).getElementsByTagName('h6')[1].textContent = "Price: P" + getImgPrice;
+    }
+  
+  };
+  writeCaption();
+
+  function getTotal(){// total items selected
+    let totalCount = document.getElementsByClassName('content-inside').length;
+    let orderCount = document.getElementById('order-count');
+    orderCount.textContent = totalCount;
+    
+  };
+  
+  function totalPrice(){// total price amount
+    let idPrice = 0
+    let getContent = document.getElementsByClassName('content')[0];
+    let total = getContent.getElementsByClassName('pricing');
+    for(let i = 0; i < total.length; i++){
+      let addingTotal = total.item(i).textContent
+      idPrice =  parseFloat(idPrice) + parseFloat(addingTotal);
+    }
+    idPrice = Math.round(idPrice * 100)/100;
+    myPrice.setAttribute("value", idPrice);
+    let totalItemPrice = idPrice
+    submitForm1(totalItemPrice);
+  }
+  
+  function clearRow(){// clear all items
+    let container = document.getElementsByClassName('content')[0];
+    let resetBtn = document.getElementById('idReset');
+    resetBtn.addEventListener("click", function(){
+      while (container.firstChild) {
+        container.removeChild(container.firstChild);
+        totalPrice();
+        getTotal();
+      }
+    })
+  }
+  clearRow();
+
+  let indexForm = document.getElementById('index-form');
+
+  function submitForm1(){
+    indexForm.addEventListener("submit", (e)=>{// purchase items
+
+      if(myPrice.value == 0 || isNaN(parseFloat(myPrice.value))){
+        e.preventDefault();
+        return
+      }
+    })
+    
+  }
+
+ submitForm1();
+
+  $(function () {// show tooltip
+    $('[data-toggle="tooltip"]').tooltip({
+    trigger : 'hover'
+})    
+  })
+
+}
+
+function itemFunc(){ //DOM for item.html
+  console.log("LOADED: item.html")
+  let foodName = document.getElementById('food');
+  let foodQuantity = document.getElementById('quantity');
+  let foodPrice = document.getElementById('price');
+  let imgUpload = document.getElementById('myFile');
+  let drpDown = document.getElementById('dropdown');
+  let tbodyBreakfast = document.getElementById('table-content-breakfast');
+  let tbodyLunchmeal = document.getElementById('table-content-lunchmeal');
+  let tbodyDrinks = document.getElementById('table-content-drinks');
+  let tbodyAddons = document.getElementById('table-content-addons');
+  let submitForm = document.getElementById('item-form');
+
+  foodQuantity.addEventListener("change", function(event){// input must be an integer
+    let inputQuantity = event.target;
+    console.log(parseInt(inputQuantity.value));
+
+    if(isNaN(parseInt(inputQuantity.value)) || inputQuantity.value <= 0){
+      inputQuantity.value = 1;
+      console.log("ERROR INPUT QUANTITY " + typeof parseInt(inputQuantity.value));
+    }
+    else {
+      foodQuantity.value = parseInt(inputQuantity.value);
+    }
+  })
+
+
+  foodPrice.addEventListener("change", function(event){// input must be integer or float
+    let inputPrice = event.target;
+
+    if(isNaN(parseFloat(inputPrice.value)) && isNaN(parseInt(inputPrice.value)) || inputPrice.value <= 0){
+      inputPrice.value = 1;
+      console.log("ERROR INPUT PRICE"+  + typeof parseFloat(inputPrice.value));
+    }
+    else if(inputPrice.value >= 1000){
+      inputPrice.value = 1000;
+
+    }
+
+    inputPrice = Math.round(inputPrice.value * 100)/100;// round number to the nearest 2 dec.
+    console.log(inputPrice);
+    foodPrice.value = inputPrice;
+  })
+
+  submitForm.addEventListener('submit', function(e){// submit items
+    let path = imgUpload.value;
+    let filename = path.replace("C:\\fakepath\\", "image/");
+  
+    document.getElementById('preview').setAttribute("src", filename);
+
+    let createTableRow = document.createElement('tr');
+
+    let newContent = `
+    <tr>
+        <td>${foodName.value}</td>
+        <td><img src="${filename}" alt="${foodName.value}" class="img img-input"></td>
+        <td>${parseInt(foodQuantity.value)}</td>
+        <td>P ${parseFloat(foodPrice.value)}</td>
+        <td><button class="btn btn-danger rem" type="button" data-toggle = "tooltip" title="Remove this item" data-placement="bottom"><i class="fa fa-trash-o"></i></button></td>
+    </tr>
+    `
+    $(function () {// show tooltip for remove button
+      $('[data-toggle="tooltip"]').tooltip({
+    trigger : 'hover'
+})    
+    })
+    createTableRow.innerHTML = newContent;
+
+    let breakfastTbl = document.getElementById('id-table-item-breakfast').childNodes[3];
+    let lunchmealTbl = document.getElementById('id-table-item-lunchmeal').childNodes[3];
+    let drinksTbl = document.getElementById('id-table-item-drinks').childNodes[3];
+    let addonTbl = document.getElementById('id-table-item-addons').childNodes[3];
+       
+    if(isNaN(parseInt(foodQuantity.value)) || isNaN(parseFloat(foodPrice.value)) || imgUpload.value === ''){ //if input not valid, prevent submit
+      alert('Invalid inputs');
+      console.log('ERROR: INPUT NOT VALID')
+      e.preventDefault();
+    }
+    else{//input is valid, submit
+      if(drpDown.value === "breakfast"){// if duplicates, prevent submit
+
+        for(let i = 0; i < breakfastTbl.rows.length; i++){//check dupplicates
+          if(breakfastTbl.rows[i].childNodes[1].innerHTML == foodName.value){
+            alert('already added');
+            return;
+          }
+
+        };
+        tbodyBreakfast.appendChild(createTableRow);
+
+      }
+      if(drpDown.value === "lunchmeal"){
+        
+        for(let i = 0; i < lunchmealTbl.rows.length; i++){//check dupplicates
+          if(lunchmealTbl.rows[i].childNodes[1].innerHTML == foodName.value){
+            alert('already added');
+            return;
+          }
+        };
+        tbodyLunchmeal.appendChild(createTableRow);
+
+      }
+      if(drpDown.value === "beverage"){
+        
+        for(let i = 0; i < drinksTbl.rows.length; i++){//check dupplicates
+          if(drinksTbl.rows[i].childNodes[1].innerHTML == foodName.value){
+            alert('already added');
+            return;
+          }
+        };
+        tbodyDrinks.appendChild(createTableRow);
+
+      }
+      if(drpDown.value === "add-ons"){
+        
+        for(let i = 0; i < addonTbl.rows.length; i++){//check dupplicates
+          if(drinksTbl.rows[i].childNodes[1].innerHTML == foodName.value){
+            alert('already added');
+            return;
+          }
+        };
+        tbodyAddons.appendChild(createTableRow);
+        e.preventDefault();
+
+      }
+    }
+    removeItem();
+    getElementCount();
+  });
+  
+  function getElementCount(){//show total item inside
+    let breakfastCount = tbodyBreakfast.rows.length;
+    let lunchmealCount = tbodyLunchmeal.rows.length;
+    let drinksCount = tbodyDrinks.rows.length;
+    let addonsCount = tbodyAddons.rows.length;
+
+    document.getElementById('breakfast-count').textContent = breakfastCount;
+    document.getElementById('lunchmeal-count').textContent = lunchmealCount;
+    document.getElementById('drinks-count').textContent = drinksCount;
+    document.getElementById('addons-count').textContent = addonsCount;
+
+  }
+  
+  function removeItem(){//remove individual item
+    let removeBtn = document.getElementsByClassName('btn btn-danger rem');
+    for(let i = 0; i < removeBtn.length; i++){
+      removeBtn[i].onclick = function(){
+        this.parentNode.parentNode.remove();
+        getElementCount();
+      }
+    }
+  }
+
+  let clearBtn = document.getElementById('clear');
+  clearBtn.addEventListener("click", () => {// clear inputs
+    console.log('working');
+    foodQuantity.value = '';
+    foodPrice.value = '';
+    foodName.value = '';
+    imgUpload.value = '';
+    drpDown.value = 'breakfast'
+    document.getElementById('preview').src = "";//clear form after adding
+  })
+  
+  let menuTab = document.getElementById('menu-tab');
+  menuTab.addEventListener("click", ()=>{// show index.html on new tab
+   window.open("index.html");
+  })
+
+  $(function () {// show tooltip
+    $('[data-toggle="tooltip"]').tooltip({
+    trigger : 'hover'
+})    
+  })
+
+}
+
+function inventoryFunc(){ //DOM for item.html
+
+  console.log("LOADED: inventory.html")
+  let indexSales = 0;
+  let successSales = 0;
+  let cancelSales = 0;
+  let changeBtn = document.getElementsByClassName("change");
+  let salesValue = document.getElementById('id-sales-value');
+  let successValue = document.getElementById('id-success-value');
+  let cancelValue = document.getElementById('id-cancel-value');
+  let table = document.getElementById('tbl-inventory');
+  let clearTable = document.getElementById('reset-btn');
+  let inventory = document.getElementById('inventory-body');
+  
+  inventory.addEventListener("mouseover", ()=>{// update time on mouse hover
+    document.getElementById('id-time').textContent = formatAMPM(new Date) + ' ';
+    document.getElementById('id-time').appendChild(createI);
+  })
+
+  for(let i = 0; i < changeBtn.length; i++){// loop edit buttons and show tooltip
+    let self = changeBtn.item(i);
+    self.setAttribute("data-toggle", "tooltip");
+    self.setAttribute("data-placement", "right");
+    self.setAttribute("title", "Edit status");
+    self.addEventListener("click", ()=>{
+      changeContent(self);
+    }) 
+  };
+
+  function changeContent(changeSelf){// toggle button
+    if(changeSelf.parentElement.parentElement.childNodes[7].textContent === "SUCCESS"){
+      changeSelf.parentElement.parentElement.childNodes[7].textContent = "CANCELLED";
+      changeSelf.parentElement.parentElement.childNodes[7].style.color = "#e12120";
+    }
+    else{
+      changeSelf.parentElement.parentElement.childNodes[7].textContent = "SUCCESS";
+      changeSelf.parentElement.parentElement.childNodes[7].style.color = "#1261A0";
+    }
+    updateSales2(changeSelf);
+  }
+
+  for(let i = 1; i < table.rows.length; i++){//loop table rows
+    let tablerows2 = table.rows[i];
+    let tableCellPrice = tablerows2.cells.item(2).textContent;
+    tablerows2.style.backgroundColor = 'white';
+    updateSales(tablerows2, tableCellPrice);
+  }
+
+  function updateSales(tablerows2, tableCellPrice){// change text color, update no. of sales, success, and cancel
+    if(tablerows2.childNodes[7].textContent === "SUCCESS"){
+      tablerows2.childNodes[7].style.color = "#1261A0";
+      indexSales = indexSales + parseInt(tableCellPrice);
+      salesValue.textContent =  "P " + indexSales;
+      successSales++;
+      successValue.textContent = successSales;
+    }
+    else if(tablerows2.childNodes[7].textContent === "CANCELLED"){
+      tablerows2.childNodes[7].style.color = "#e12120";
+      cancelSales++;
+      cancelValue.textContent = cancelSales;
+    }
+  }
+
+  function updateSales2(updateChangeSelf){// update again but when changed status
+    let value = updateChangeSelf.parentElement.parentElement.childNodes[5];
+
+    if(updateChangeSelf.parentElement.parentElement.childNodes[7].textContent === "SUCCESS"){
+      indexSales = indexSales + parseInt(value.textContent);
+      salesValue.textContent = "P " + indexSales;
+      successSales++;
+      cancelSales--;
+
+    }
+    else if (updateChangeSelf.parentElement.parentElement.childNodes[7].textContent === "CANCELLED"){
+      indexSales = indexSales - parseInt(value.textContent);
+      salesValue.textContent = "P " + indexSales;
+      cancelSales++;
+      successSales--;
+    }
+    successValue.textContent = successSales;
+    cancelValue.textContent = cancelSales;
+
+  }
+
+
+let dateArray = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];// index of days
+
+let d = new Date();
+let n = dateArray[d.getDay()];//display day name
+
+document.getElementById('date-name').textContent = n + ' ';
+
+function formatAMPM(date) {//display minutes, seconds, AM and PM
+  var hours = date.getHours();
+  var minutes = date.getMinutes();
+  var ampm = hours >= 12 ? 'pm' : 'am';
+  hours = hours % 12;
+  hours = hours ? hours : 12; // the hour '0' should be '12'
+  minutes = minutes < 10 ? '0'+minutes : minutes;
+  var strTime = hours + ':' + minutes + ' ' + ampm;
+  return strTime;
+}
+
+  let createI = document.createElement('i');
+  createI.setAttribute("class", 'far fa-clock inventory-icons');
+
+  console.log(formatAMPM(new Date));
+  document.getElementById('id-time').textContent = formatAMPM(new Date) + ' ';
+  document.getElementById('id-time').appendChild(createI);
+
+  clearTable.addEventListener("click", () => {// append new table if true
+    let choose = confirm("Do you want to clear table?");
+    if(choose === true){
+      addNewTbody();
+    }
+    else if(choose === false){
+      console.log("cancel")
+    }
+  });
+
+  function addNewTbody(){// create new table and replace old
+    let createNewtBody = document.createElement('tbody');
+    createNewtBody.setAttribute("class", "tb-body");
+    createNewtBody.setAttribute("id", "id-tb-body");
+
+    let oldtBody =  table.childNodes[3];
+    
+    let parentTable = oldtBody.parentElement;
+
+    parentTable.replaceChild(createNewtBody, oldtBody);
+
+    indexSales = indexSales - indexSales;
+    cancelSales = cancelSales - cancelSales;
+    successSales = successSales - successSales;
+
+    afterClearTable();
+  }
+
+  function afterClearTable(){// update sales, success, and cancel after cleard
+    salesValue.textContent = "P " + indexSales;
+    cancelValue.textContent = cancelSales;
+    successValue.textContent = successSales;
+  }
+    
+  let menuTab = document.getElementById('menu-tab');
+  menuTab.addEventListener("click", ()=>{// open index.html on new tab
+   window.open("index.html");
+  })
+
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip({
+    trigger : 'hover'
+})    
+  })
+}
